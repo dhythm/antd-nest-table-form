@@ -22,6 +22,7 @@ pnpm run dev
 
 ```sh
 pnpm add antd
+pnpm add  @ant-design/icons
 ```
 
 ### Install formatter
@@ -32,4 +33,3 @@ echo {}> .prettierrc.json
 
 # Then update .eslintrc.cjs
 ```
-
