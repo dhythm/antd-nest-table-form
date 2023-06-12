@@ -176,10 +176,12 @@ function App() {
           setOpenCreateLevel1Modal(false);
         }}
         onCancel={() => setOpenCreateLevel1Modal(false)}
+        destroyOnClose
       >
         <Form
           form={modalForm}
           layout="vertical"
+          preserve={false}
           onFinish={(values) => {
             console.log(values);
             setData((prev) =>
