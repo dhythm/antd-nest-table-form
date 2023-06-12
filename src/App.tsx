@@ -6,6 +6,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   PlusCircleOutlined,
+  CheckCircleOutlined,
 } from "@ant-design/icons";
 
 function App() {
@@ -37,63 +38,133 @@ function App() {
         key: string;
       }
   >({ open: false });
-  const [form] = Form.useForm();
+  const [tableForm] = Form.useForm();
+  const [modalForm] = Form.useForm();
+  const [isEditingLevel1, setIsEditingLevel1] = useState<
+    | { editing: false }
+    | {
+        editing: true;
+        key: string;
+      }
+  >({ editing: false });
 
+  console.log(data);
   return (
     <>
-      <Table
-        dataSource={data}
-        columns={[
-          { title: "name", key: "name", dataIndex: "name" },
-          { title: "value", key: "value", dataIndex: "value" },
-          {
-            title: (
-              <PlusCircleOutlined
-                onClick={() => setOpenCreateLevel1Modal(true)}
+      <Form
+        form={tableForm}
+        onFinish={(values) => {
+          console.log(values);
+          setData((prev) =>
+            prev.map((d) =>
+              values.key === d.key
+                ? {
+                    ...d,
+                    ...values,
+                  }
+                : d
+            )
+          );
+        }}
+      >
+        <Table
+          dataSource={data}
+          columns={[
+            {
+              title: "name",
+              key: "name",
+              dataIndex: "name",
+              render: (value, record) =>
+                isEditingLevel1.editing &&
+                isEditingLevel1.key === record.key ? (
+                  <>
+                    <Form.Item name="key" hidden></Form.Item>
+                    <Form.Item name="name" style={{ margin: 0 }}>
+                      <Input />
+                    </Form.Item>
+                  </>
+                ) : (
+                  <Typography>{value}</Typography>
+                ),
+            },
+            {
+              title: "value",
+              key: "value",
+              dataIndex: "value",
+              render: (value, record) =>
+                isEditingLevel1.editing &&
+                isEditingLevel1.key === record.key ? (
+                  <Form.Item name="value" style={{ margin: 0 }}>
+                    <Input />
+                  </Form.Item>
+                ) : (
+                  <Typography>{value}</Typography>
+                ),
+            },
+            {
+              title: (
+                <PlusCircleOutlined
+                  onClick={() => setOpenCreateLevel1Modal(true)}
+                />
+              ),
+              key: "actions",
+              align: "right",
+              render: (_, record, idx) => (
+                <Space.Compact>
+                  {isEditingLevel1.editing &&
+                  isEditingLevel1.key === record.key ? (
+                    <CheckCircleOutlined
+                      onClick={() => {
+                        tableForm.submit();
+                        setIsEditingLevel1({ editing: false });
+                      }}
+                    />
+                  ) : (
+                    <EditOutlined
+                      onClick={() => {
+                        tableForm.setFieldsValue({ ...record });
+                        setIsEditingLevel1({ editing: true, key: record.key });
+                      }}
+                    />
+                  )}
+                  <DeleteOutlined
+                    onClick={() =>
+                      setOpenDeleteLevel1Modal({
+                        open: true,
+                        key: record.key,
+                      })
+                    }
+                  />
+                </Space.Compact>
+              ),
+            },
+          ]}
+          expandable={{
+            expandedRowRender: (field) => (
+              <Table
+                dataSource={field.items}
+                columns={[
+                  { title: "name", key: "name", dataIndex: "name" },
+                  { title: "value", key: "value", dataIndex: "value" },
+                  {
+                    title: <PlusCircleOutlined />,
+                    key: "actions",
+                    align: "right",
+                    render: (_, record, idx) => (
+                      <Space.Compact>
+                        <EditOutlined />
+                        <DeleteOutlined />
+                      </Space.Compact>
+                    ),
+                  },
+                ]}
+                pagination={false}
               />
             ),
-            key: "actions",
-            align: "right",
-            render: (_, record, idx) => (
-              <Space.Compact>
-                <EditOutlined />
-                <DeleteOutlined
-                  onClick={() =>
-                    setOpenDeleteLevel1Modal({
-                      open: true,
-                      key: record.key,
-                    })
-                  }
-                />
-              </Space.Compact>
-            ),
-          },
-        ]}
-        expandable={{
-          expandedRowRender: (field) => (
-            <Table
-              dataSource={field.items}
-              columns={[
-                { title: "name", key: "name", dataIndex: "name" },
-                { title: "value", key: "value", dataIndex: "value" },
-                {
-                  title: <PlusCircleOutlined />,
-                  key: "actions",
-                  align: "right",
-                  render: (_, record, idx) => (
-                    <Space.Compact>
-                      <EditOutlined />
-                      <DeleteOutlined />
-                    </Space.Compact>
-                  ),
-                },
-              ]}
-              pagination={false}
-            />
-          ),
-        }}
-        pagination={false}
-      />
+          }}
+          pagination={false}
+        />
+      </Form>
 
       <Modal
         title="Add level1"
@@ -101,20 +172,20 @@ function App() {
         open={openCreateLevel1Modal}
         okText="create"
         onOk={() => {
-          form.submit();
+          modalForm.submit();
           setOpenCreateLevel1Modal(false);
         }}
         onCancel={() => setOpenCreateLevel1Modal(false)}
       >
         <Form
-          form={form}
+          form={modalForm}
           layout="vertical"
           onFinish={(values) => {
             console.log(values);
             setData((prev) =>
               prev.concat({ key: values.name, ...values, items: [] })
             );
-            form.resetFields();
+            modalForm.resetFields();
           }}
         >
           <Form.Item name="name" label="name">
