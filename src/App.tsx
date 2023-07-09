@@ -1,13 +1,14 @@
 import { useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
-import { Button, Form, Input, Modal, Space, Table, Typography } from "antd";
+import { Button, Form, Input, Modal, Space, Table } from "antd";
 import {
   EditOutlined,
   DeleteOutlined,
   PlusCircleOutlined,
   CheckCircleOutlined,
 } from "@ant-design/icons";
+import { Typography } from "./components";
 
 function App() {
   const [data, setData] = useState([
