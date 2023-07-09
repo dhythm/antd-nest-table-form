@@ -32,11 +32,26 @@ function App() {
     },
   ]);
   const [openCreateLevel1Modal, setOpenCreateLevel1Modal] = useState(false);
+  const [openCreateLevel2Modal, setOpenCreateLevel2Modal] = useState<
+    | { open: false }
+    | {
+        open: true;
+        key: string;
+      }
+  >({ open: false });
   const [openDeleteLevel1Modal, setOpenDeleteLevel1Modal] = useState<
     | { open: false }
     | {
         open: true;
         key: string;
+      }
+  >({ open: false });
+  const [openDeleteLevel2Modal, setOpenDeleteLevel2Modal] = useState<
+    | { open: false }
+    | {
+        open: true;
+        level1Key: string;
+        level2Key: string;
       }
   >({ open: false });
   const [tableForm] = Form.useForm();
@@ -49,7 +64,6 @@ function App() {
       }
   >({ editing: false });
 
-  console.log(data);
   return (
     <>
       <Form
@@ -148,7 +162,16 @@ function App() {
                   { title: "name", key: "name", dataIndex: "name" },
                   { title: "value", key: "value", dataIndex: "value" },
                   {
-                    title: <PlusCircleOutlined />,
+                    title: (
+                      <PlusCircleOutlined
+                        onClick={() =>
+                          setOpenCreateLevel2Modal({
+                            open: true,
+                            key: field.key,
+                          })
+                        }
+                      />
+                    ),
                     key: "actions",
                     align: "right",
                     render: (_, record, idx) => (
@@ -177,16 +200,18 @@ function App() {
           setOpenCreateLevel1Modal(false);
         }}
         onCancel={() => setOpenCreateLevel1Modal(false)}
+        destroyOnClose
       >
         <Form
           form={modalForm}
           layout="vertical"
+          preserve={false}
           onFinish={(values) => {
             console.log(values);
             setData((prev) =>
               prev.concat({ key: values.name, ...values, items: [] })
             );
-            modalForm.resetFields();
+            // modalForm.resetFields();
           }}
         >
           <Form.Item name="name" label="name">
@@ -197,6 +222,44 @@ function App() {
           </Form.Item>
         </Form>
       </Modal>
+
+      {openCreateLevel2Modal.open && (
+        <Modal
+          title="Add level2"
+          transitionName="ant-fade"
+          open
+          okText="create"
+          onOk={() => {
+            modalForm.submit();
+            setOpenCreateLevel2Modal({ open: false });
+          }}
+          onCancel={() => setOpenCreateLevel2Modal({ open: false })}
+          destroyOnClose
+        >
+          <Form
+            form={modalForm}
+            layout="vertical"
+            preserve={false}
+            onFinish={(values) => {
+              console.log(values);
+              setData((prev) =>
+                prev.map((d) =>
+                  d.key === openCreateLevel2Modal.key
+                    ? { ...d, items: d.items.concat({ ...values, items: [] }) }
+                    : d
+                )
+              );
+            }}
+          >
+            <Form.Item name="name" label="name">
+              <Input />
+            </Form.Item>
+            <Form.Item name="value" label="value">
+              <Input />
+            </Form.Item>
+          </Form>
+        </Modal>
+      )}
 
       {openDeleteLevel1Modal.open && (
         <Modal
